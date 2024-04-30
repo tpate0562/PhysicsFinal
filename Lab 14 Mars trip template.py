@@ -23,7 +23,8 @@ AU = 1.496e11                # Astronomical unit (avg. dist from Sun to Earth--f
 msun = 1.989e30              # mass of Sol (sun)
 mearth = 5.97219e24              # mass of Earth
 mjupiter = 1.898e27           # mass of jupiter
-mrocket = 815              # mass of rocket
+mrocket = 815    
+msaturn = 5.683e26          # mass of rocket
 
 # *** Control panel (all quantities in metric units)
 # *** To simplify the problem, set the z-component of 
@@ -31,15 +32,15 @@ mrocket = 815              # mass of rocket
 
 dt = 2 * 3600                          # time step
 jupiterrocketdist = 500 * jupiterdiameter    # distance from jupiter considered a success
-riearth = vector(1.447214054379151E+11, -4.423991320885015E+10, -1.062619063954428E+07)                   # initial position of jupiter
-viearth = vector(8.148892366116470E+03, 2.840375889886787E+04, 1.639043726347822E+00)
-rijupiter = vector(1.055355055205870E+11, 7.546173434489038E+11, -5.471696100017726E+09)                 # initial position of earth
-vijupiter = vector(-1.309430711064983E+04, 2.413277002306963E+03, 2.833049104713701E+02)                     # initial velocity of earth
+riearth = vector( 4.449401091798647E+10, 1.403470707888662E+08, -1.769063940881193E+04)                   # initial position of jupiter
+viearth = vector(-2.893748681913718E+04, 8.702013674306697E+03,7.726695004177664E-01)
+rijupiter = vector(-3.952668829569589E+11, 6.792547950520715E+11, 6.054681409011871E+09)                 # initial position of earth
+vijupiter = vector(-1.144241460230606E+04, -5.972055209548326E+03, 2.807644771036928E+02)                     # initial velocity of earth
                     # initial velocity of jupiter
-virocket =vector(1.621225177117242E+04, 4.048629375968122E+04, 8.055511810827731E+02)             #initial speed of rocket
-rirocket =  vector(1.447289329190070E+11, -4.424029803569365E+10, -1.103055189367570E+07)          # launch angle of rocket (relative to +x axis)
-
-
+rirocket =vector(-3.804368981984373E+11, 5.917727238669536E+11, 8.206215977999300E+09)             #initial speed of rocket
+virocket =  vector(-1.325519458837047E+04, 4.932879806883460E+03, 1.178862520211088E+01)          # launch angle of rocket (relative to +x axis)
+risaturn = vector(-1.287092434829489E+12, 5.253855136589826E+11, 4.195904660432076E+10)
+visaturn = vector(-4.172246290764435E+03, -8.964810326105848E+03, 3.222895141594253E+02)
 
 
 # set up scene and objects
@@ -47,17 +48,21 @@ rirocket =  vector(1.447289329190070E+11, -4.424029803569365E+10, -1.10305518936
 
 sun=sphere(pos=vector(0,0,0), radius=0.1*AU, color=color.yellow)
 
-earth=sphere(pos=riearth, radius=0.05*AU, color=color.blue)
+earth=sphere(pos=riearth, radius=0.01*AU, color=color.blue)
 earthtrail=attach_trail(earth, radius=0.2*earth.radius, trail_type="points", interval=2, retain=1000)
 earth.vel = viearth
 
-jupiter=sphere(pos=rijupiter, radius=0.08*AU, color=color.red)
+jupiter=sphere(pos=rijupiter, radius=0.01*AU, color=color.red)
 jupitertrail=attach_trail(jupiter, radius=0.2*jupiter.radius, trail_type="points", interval=2, retain=1000)
 jupiter.vel = vijupiter
 
 rocket=sphere(pos=rirocket, radius=0.05*AU, color=color.orange)
 rockettrail=attach_trail(rocket, radius=0.2*rocket.radius, trail_type="points", interval=2, retain=1000)
 rocket.vel = virocket
+
+saturn=sphere(pos=risaturn, radius=0.03*AU, color=color.blue)
+saturntrail=attach_trail(saturn, radius=0.2*rocket.radius, trail_type="points", interval=2, retain=1000)
+saturn.vel = visaturn
 scene.camera.follow(rocket)
 
 # draw an arrow to show direction of initial velocity of rocket
@@ -102,12 +107,16 @@ while 1:
     f_jupiter_sun = gravitational_force(mjupiter, msun, jupiter.pos, sun.pos)
     jupiter.vel += f_jupiter_sun / mjupiter * dt
     jupiter.pos += jupiter.vel * dt
+    f_saturn_sun = gravitational_force(msaturn, msun, saturn.pos, sun.pos)
+    saturn.vel += f_saturn_sun / msaturn * dt
+    saturn.pos += saturn.vel * dt
 
     # Rocket's motion
     f_rocket_sun = gravitational_force(mrocket, msun, rocket.pos, sun.pos)
     f_rocket_earth = gravitational_force(mrocket, mearth, rocket.pos, earth.pos)
     f_rocket_jupiter = gravitational_force(mrocket, mjupiter, rocket.pos, jupiter.pos)
-    total_force = f_rocket_sun + f_rocket_earth + f_rocket_jupiter
+    f_rocket_saturn = gravitational_force(mrocket, msaturn, rocket.pos, saturn.pos)
+    total_force = f_rocket_sun + f_rocket_earth + f_rocket_jupiter + f_rocket_saturn
     rocket.vel += total_force / mrocket * dt
     rocket.pos += rocket.vel * dt
 
@@ -115,4 +124,4 @@ while 1:
     t += dt
     tstr = "Time: {:.0f} days".format(t / (24 * 3600))
     tlabel.text = tstr
-    print(mag(rocket.pos-jupiter.pos))
+
