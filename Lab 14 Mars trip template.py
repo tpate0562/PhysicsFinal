@@ -119,6 +119,7 @@ while 1:
     total_force = f_rocket_sun + f_rocket_earth + f_rocket_jupiter + f_rocket_saturn
     rocket.vel += total_force / mrocket * dt
     rocket.pos += rocket.vel * dt
+    print(mag(jupiter.pos) - mag(rocket.pos))
 
     # Update time and label
     t += dt
